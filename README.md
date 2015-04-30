@@ -8,7 +8,7 @@ This a DSLink which allows you to write rules in which it uses to interact with 
 
 ## Example
 
-```
+```yaml
 - type: bind
   from: /conns/Storage/test/message
   to:
