@@ -1,0 +1,6 @@
+name: dsa_rule_engine
+description: Rule Engine for DSA
+dependencies:
+  dslink:
+    git: https://github.com/IOT-DSA/sdk-dslink-dart.git
+  yaml: ">=2.1.2 <3.0.0"
