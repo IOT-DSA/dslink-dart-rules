@@ -8,6 +8,7 @@ abstract class RuleType {
 abstract class RuleContext {
   Requester get requester;
   Map<String, dynamic> get config;
+
   ReqSubscribeListener subscribe(String path, void callback(ValueUpdate update), {int cacheLevel: 1}) {
     return requester.subscribe(path, callback, cacheLevel);
   }
@@ -15,5 +16,7 @@ abstract class RuleContext {
   Future<RequesterUpdate> set(String path, dynamic value) {
     return requester.set(path, value);
   }
+
+  Future execute(action, [DataflowContext context]);
 }
 

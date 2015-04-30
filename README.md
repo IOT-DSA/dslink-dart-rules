@@ -4,16 +4,25 @@ This a DSLink which allows you to write rules in which it uses to interact with 
 
 ## Features
 
+- Rule DSL
 - Data Binding
+- Data Flow
 
 ## Example
 
 ```yaml
 - type: bind
-  from: /conns/Storage/test/message
+  from: /conns/Storage/alex/msg
   to:
     invoke: /conns/Chrome/Speak
     parameter: text
+- type: tick
+  seconds: 5
+  execute:
+  - type: invoke
+    path: /conns/Chrome/Speak
+    params:
+      text: "Hello World"
 ```
 
 ## Usage

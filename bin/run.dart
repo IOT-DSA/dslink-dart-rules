@@ -5,6 +5,7 @@ import "package:dslink/client.dart";
 import "package:dslink/requester.dart";
 
 import "package:dsa_rule_engine/rules.dart";
+import "package:dsa_rule_engine/dataflow.dart";
 
 import "package:yaml/yaml.dart";
 
@@ -44,7 +45,8 @@ Future<List<Map<String, dynamic>>> loadRules() async {
 
 class CmdlineRuleManagerAdapter extends RuleManagerAdapter {
   final Map<String, RuleType> ruleTypes = {
-    "bind": new BindRuleType()
+    "bind": new BindRuleType(),
+    "tick": new TickRuleType()
   };
 
   @override
@@ -56,6 +58,40 @@ class CmdlineRuleManagerAdapter extends RuleManagerAdapter {
   RuleType getRuleType(String name) => ruleTypes[name];
 }
 
+class DataflowContextImpl extends DataflowContext {
+  Map<String, dynamic> inputs = {};
+  Map<String, dynamic> outputs = {};
+
+  @override
+  getInput(String name) {
+    return inputs[name];
+  }
+
+  @override
+  void setOutput(String name, value) {
+    outputs[name] = value;
+  }
+
+  void flip() {
+    var tmp = outputs;
+    outputs = inputs;
+    inputs = tmp;
+  }
+
+  @override
+  void clearOutputs() {
+    outputs.clear();
+  }
+
+  @override
+  void setInput(String name, value) {
+    inputs[name] = value;
+  }
+
+  @override
+  RuleContext rule;
+}
+
 class CmdlineRuleContext extends RuleContext {
   final Map<String, dynamic> config;
 
@@ -63,4 +99,38 @@ class CmdlineRuleContext extends RuleContext {
 
   @override
   Requester get requester => link.link.requester;
+
+  @override
+  Future execute(action, [DataflowContext ctx]) async {
+    if (ctx == null) {
+      ctx = new DataflowContextImpl()..rule = this;
+    }
+
+    if (action is List) {
+      DataflowContext c = ctx;
+      for (var x in action) {
+        await execute(x, c);
+        c.flip();
+        c.clearOutputs();
+      }
+
+      return;
+    }
+
+    var type = action["type"];
+
+    if (blocks.containsKey(type)) {
+      for (var n in action.keys) {
+        ctx.setInput(n, action[n]);
+      }
+
+      await blocks[type].execute(ctx);
+    }
+  }
 }
+
+final Map<String, DataflowBlock> blocks = {
+  "concatenate": new ConcatenateBlock(),
+  "print": new PrintBlock(),
+  "invoke": new InvokeBlock()
+};
