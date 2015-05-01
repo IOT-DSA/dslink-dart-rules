@@ -58,13 +58,26 @@ class CmdlineRuleManagerAdapter extends RuleManagerAdapter {
   RuleType getRuleType(String name) => ruleTypes[name];
 }
 
+final RegExp VAR_REGEX = new RegExp(r"\{\{(.+)\}\}");
+
 class DataflowContextImpl extends DataflowContext {
   Map<String, dynamic> inputs = {};
   Map<String, dynamic> outputs = {};
 
   @override
   getInput(String name) {
-    return inputs[name];
+    var val = inputs[name];
+
+    if (val is String) {
+      val = val.replaceAllMapped(VAR_REGEX, (Match match) {
+        var name = match.group(1);
+        var v = getInput(name);
+
+        return v;
+      });
+    }
+
+    return val;
   }
 
   @override

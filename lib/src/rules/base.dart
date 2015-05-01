@@ -19,4 +19,3 @@ abstract class RuleContext {
 
   Future execute(action, [DataflowContext context]);
 }
-

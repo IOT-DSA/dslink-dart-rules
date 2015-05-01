@@ -7,11 +7,11 @@ class InvokeBlock extends DataflowBlock {
     var params = context.getInput("params");
     if (params == null) params = {};
     List<RequesterInvokeUpdate> result = await context.rule.requester.invoke(path, params).toList();
-    if (result.length == 1 && result.first.rows.length == 1) {
-      var r = result.first.rows.first;
+    if (result.length == 1 && result.first.updates.first.length == 1) {
+      var r = result.first.updates.first;
       var i = 0;
-      for (var x in r) {
-        context.setOutput(result.first.columns[i].name, x);
+      for (var x in r.keys) {
+        context.setOutput(x, r[x]);
         i++;
       }
     }
