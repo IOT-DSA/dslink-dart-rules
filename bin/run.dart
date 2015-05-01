@@ -3,6 +3,7 @@ import "dart:io";
 
 import "package:dslink/client.dart";
 import "package:dslink/requester.dart";
+import "package:dslink/utils.dart";
 
 import "package:dsa_rule_engine/rules.dart";
 import "package:dsa_rule_engine/dataflow.dart";
@@ -25,6 +26,8 @@ main(List<String> args) async {
   for (var rule in rules) {
     await manager.add(rule["type"], rule);
   }
+
+  updateLogLevel("none");
 }
 
 Future<List<Map<String, dynamic>>> loadRules() async {
@@ -38,6 +41,16 @@ Future<List<Map<String, dynamic>>> loadRules() async {
 
   if (result == null) {
     result = [];
+  }
+
+  if (result is Map) {
+    if (result.containsKey("rules")) {
+      result = result["rules"];
+    } else if (result.containsKey("rules_key")) {
+      result = result[result["rules_key"]];
+    } else {
+      result = [];
+    }
   }
 
   return result;
@@ -85,6 +98,7 @@ class DataflowContextImpl extends DataflowContext {
     outputs[name] = value;
   }
 
+  @override
   void flip() {
     var tmp = outputs;
     outputs = inputs;
@@ -145,5 +159,6 @@ class CmdlineRuleContext extends RuleContext {
 final Map<String, DataflowBlock> blocks = {
   "concatenate": new ConcatenateBlock(),
   "print": new PrintBlock(),
-  "invoke": new InvokeBlock()
+  "invoke": new InvokeBlock(),
+  "getValue": new GetValueBlock()
 };

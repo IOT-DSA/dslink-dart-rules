@@ -22,12 +22,14 @@ class BindRuleType extends RuleType {
       if (to is String) {
         context.set(to, value);
       } else if (to is Map) {
-        var tp = to["invoke"];
-        var tpa = to["parameter"];
+        if (to.containsKey("invoke")) {
+          var tp = to["invoke"];
+          var tpa = to["parameter"];
 
-        context.requester.invoke(tp, {
-          tpa: value
-        });
+          context.requester.invoke(tp, {
+            tpa: value
+          });
+        }
       }
     });
   }
