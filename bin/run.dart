@@ -9,6 +9,7 @@ import "package:dsa_rule_engine/rules.dart";
 import "package:dsa_rule_engine/dataflow.dart";
 
 import "package:yaml/yaml.dart";
+import "package:logging/logging.dart";
 
 LinkProvider link;
 Requester requester;
@@ -27,7 +28,7 @@ main(List<String> args) async {
     await manager.add(rule["type"], rule);
   }
 
-  updateLogLevel("none");
+  logger.level = Level.SEVERE;
 }
 
 Future<List<Map<String, dynamic>>> loadRules() async {
