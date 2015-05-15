@@ -25,7 +25,14 @@ main(List<String> args) async {
   manager = new RuleManager(new CmdlineRuleManagerAdapter());
 
   for (var rule in rules) {
-    await manager.add(rule["type"], rule);
+    var type = rule.containsKey("type") ? rule["type"] : rule["="];
+
+    if (type == null) {
+      print("Error in rule ${rule}: type not specified. Skipping.");
+      continue;
+    }
+
+    await manager.add(type, rule);
   }
 
   logger.level = Level.SEVERE;
@@ -112,6 +119,12 @@ class DataflowContextImpl extends DataflowContext {
   }
 
   @override
+  void reset() {
+    outputs.clear();
+    inputs.clear();
+  }
+
+  @override
   void setInput(String name, value) {
     inputs[name] = value;
   }
@@ -136,23 +149,46 @@ class CmdlineRuleContext extends RuleContext {
 
     if (action is List) {
       DataflowContext c = ctx;
+      Map<String, dynamic> data = {};
       for (var x in action) {
-        await execute(x, c);
-        c.flip();
-        c.clearOutputs();
-      }
+        for (var key in data.keys) {
+          c.setInput(key, data[key]);
+        }
 
+        await execute(x, c);
+
+        for (var key in c.outputs.keys) {
+          data[key] = c.outputs[key];
+        }
+
+        c.reset();
+      }
       return;
     }
 
-    var type = action["type"];
+    var type = action.containsKey("type") ? action["type"] : action["="];
+
+    if (type == null) {
+      print("Error in rule ${config}: type for action ${action} not specified. Skipping rule.");
+      return;
+    }
 
     if (blocks.containsKey(type)) {
+      var b = blocks[type];
+      List<String> missing = b.requiredInputs.where((it) => !action.containsKey(it)).toList();
+      if (missing.isNotEmpty) {
+        print("Error in rule ${config}: type for action ${action} is missing the required inputs ${missing}. Skipping rule.");
+        return;
+      }
+
       for (var n in action.keys) {
         ctx.setInput(n, action[n]);
       }
 
-      await blocks[type].execute(ctx);
+      await b.execute(ctx);
+    } else {
+      print("Error in rule ${config}: type for action ${action} is not valid. Skipping rule.");
+      return;
     }
   }
 }
@@ -161,5 +197,6 @@ final Map<String, DataflowBlock> blocks = {
   "concatenate": new ConcatenateBlock(),
   "print": new PrintBlock(),
   "invoke": new InvokeBlock(),
-  "getValue": new GetValueBlock()
+  "getValue": new GetValueBlock(),
+  "setValue": new SetValueBlock()
 };
