@@ -7,13 +7,35 @@ class InvokeBlock extends DataflowBlock {
     var params = context.getInput("params");
     if (params == null) params = {};
     List<RequesterInvokeUpdate> result = await context.rule.requester.invoke(path, params).toList();
+
     if (result.length == 1 && result.first.updates.first.length == 1) {
       var r = result.first.updates.first;
-      var i = 0;
       for (var x in r.keys) {
         context.setOutput(x, r[x]);
-        i++;
       }
+    } else {
+      var data = [];
+      var updates = [];
+
+      for (var update in result) {
+        data.addAll(update.rows);
+        updates.add({
+          "columns": update.rawColumns,
+          "rows": update.rows,
+          "updates": update.updates
+        });
+      }
+
+      context.setOutput("rows", data);
+      context.setOutput("updates", updates);
+    }
+
+    if (context.getInput("with") != null || context.getInput("execute") != null) {
+      context.flip();
+      var i = context.getInput("with");
+      if (i == null) i = context.getInput("execute");
+      await context.rule.execute(i, context);
+      context.flip();
     }
   }
 

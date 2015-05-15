@@ -67,7 +67,8 @@ Future<List<Map<String, dynamic>>> loadRules() async {
 class CmdlineRuleManagerAdapter extends RuleManagerAdapter {
   final Map<String, RuleType> ruleTypes = {
     "bind": new BindRuleType(),
-    "tick": new TickRuleType()
+    "tick": new TickRuleType(),
+    "lifecycle": new LifecycleRuleType()
   };
 
   @override
@@ -198,5 +199,6 @@ final Map<String, DataflowBlock> blocks = {
   "print": new PrintBlock(),
   "invoke": new InvokeBlock(),
   "getValue": new GetValueBlock(),
-  "setValue": new SetValueBlock()
+  "setValue": new SetValueBlock(),
+  "access": new AccessBlock()
 };

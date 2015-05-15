@@ -14,3 +14,4 @@ part "src/dataflow/print.dart";
 part "src/dataflow/invoke.dart";
 part "src/dataflow/get_value.dart";
 part "src/dataflow/set_value.dart";
+part "src/dataflow/access.dart";
