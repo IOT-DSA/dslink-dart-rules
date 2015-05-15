@@ -11,15 +11,15 @@ This a DSLink which allows you to write rules in which it uses to interact with 
 ## Example
 
 ```yaml
-- type: bind
+- =: bind
   from: /conns/Storage/alex/msg
   to:
     invoke: /conns/Chrome/Speak
     parameter: text
-- type: tick
+- =: tick
   seconds: 5
   execute:
-  - type: invoke
+  - =: invoke
     path: /conns/Chrome/Speak
     params:
       text: "Hello World"
